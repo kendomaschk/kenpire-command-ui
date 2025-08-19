@@ -9,5 +9,4 @@ case "$lang" in
   rust) cargo generate-lockfile || true ;;
   java) [ -f pom.xml ] && (mvn -q -DskipTests dependency:resolve || true) || true ;;
 esac
-# SBOM if syft is present; otherwise skip quietly
 if command -v syft >/dev/null 2>&1; then syft dir:. -o cyclonedx-json > sbom.cdx.json || true; fi

@@ -1,0 +1,29 @@
+name: kenpire-security-bootstrap
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+  pull_request:
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tooling
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y python3-pip jq
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          pip install -U semgrep pipreqs || true
+          curl -sSL https://raw.githubusercontent.com/gitleaks/gitleaks/master/install.sh | bash || true
+      - name: Run lock/SBOM bootstrap
+        run: bash ./kenpire-lockfix.sh || true
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-artifacts
+          path: |
+            sbom.cdx.json
+            requirements.txt
+            package-lock.json
+          if-no-files-found: ignore
